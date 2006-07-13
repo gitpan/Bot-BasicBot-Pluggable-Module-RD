@@ -3,7 +3,7 @@ use strict;
 use base qw(Bot::BasicBot::Pluggable::Module);
 use Bot::BasicBot::Pluggable::Module::RD;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 =head1 NAME
 
@@ -20,6 +20,10 @@ See the synopsis of L<Bot::BasicBot::Pluggable> for how to load this plugin.
 This is an example module of how to use the 
 L<Bot::BasicBot::Pluggable::Module::RD> grammar framework, and should be
 used as the basis of creating new pluggable RDBot modules.
+
+Note that the grammar and methods in this module are available once RD has
+been loaded, but that will not be generally be true. A module that uses RD
+will need to have RD loaded first.
 
 =head2 Grammar
 
@@ -39,10 +43,6 @@ my $grammar = <<'END';
 command:    'say' /.*/
         |   'tell' recipient /.*/
         |   'Sorry'
-
-help:       'say'
-        |   'tell'
-        |   /\Z/
 
 recipient:  nick
         |   channel
@@ -66,29 +66,25 @@ sub init {
     Bot::BasicBot::Pluggable::Module::RD->extend( $grammar, __PACKAGE__ );
 }
 
-=head2 help namespace
+=head2 help
 
-You need to populate subs in __PACKAGE__::Help, one sub for each command
-verb you are providing help for. Note that there must be a new method 
-available either here or in its super class.
+You need to provide a help method, which is called when someone says
+
+  bot: help module
+
+See also L<Bot::BasicBot::Pluggable::Module>.
 
 =cut
 
-package Bot::BasicBot::Pluggable::Module::RD_Basic::Help;
-use strict;
-
-use base qw(Parse::RecDescent::Topiary::Base);
-
-sub say {
+sub help {
     my $self = shift;
 
-    return "say <text>.   The bot speaketh <text> to all and sundry.";
-}
+    return <<'END';
+Basic RecDescent bot commands:
+say <message>
+tell <recipient> <message>
+END
 
-sub tell {
-    my $self = shift;
-
-    return "tell <recipient> <text>.   Privmsg or to another channel";
 }
 
 =head2 command namespace

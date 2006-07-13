@@ -1,8 +1,9 @@
 package Bot::BasicBot::Pluggable::Module::RD;
 use strict;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 use base qw(Bot::BasicBot::Pluggable::Module);
+use Bot::BasicBot::Pluggable::Module::RD_Basic;
 use Parse::RecDescent;
 use Parse::RecDescent::Deparse;
 use Parse::RecDescent::Topiary;
@@ -84,6 +85,7 @@ sub init {
     $parser = Parse::RecDescent->new($grammar)
         or die "Bad grammar";
 
+    $self->Bot::BasicBot::Pluggable::Module::RD_Basic::init();
 }
 
 sub extend {
@@ -123,45 +125,9 @@ sub told {
 }
 
 sub help {
-    my ( $self, $helpstr ) = @_;
-
-    my $tree = topiary(
-        tree        => $parser->help($helpstr),
-        namespace   => [ __PACKAGE__, @namespace ],
-        ucfirst     => 1,
-        consolidate => 1,
-    );
-
-    if ($tree) {
-        $tree->display;
-    }
-    else {
-        return "Sorry, no help on $helpstr";
-    }
-}
-
-package Bot::BasicBot::Pluggable::Module::RD::Help;
-use strict;
-
-use base qw(Parse::RecDescent::Topiary::Base);
-
-sub display {
     my $self = shift;
 
-    if ( exists $self->{__STRING1__} ) {
-        my $verb  = $self->{__STRING1};
-        my $class = Parse::RecDescent::Topiary::delegation_class( 'Help',
-            \@namespace, $verb );
-        return $class->$verb;
-    }
-    else {
-        my @topics;
-        while ( my $line = $grammar->hoist ) {
-            next unless /^\s+help\s+\:\s+'(\w+)'/;
-            push @topics, $1;
-        }
-        return "Help available on " . join( ', ', @topics );
-    }
+    $self->Bot::BasicBot::Pluggable::Module::RD_Basic::help;
 }
 
 package Bot::BasicBot::Pluggable::Module::RD::Command;
